@@ -1,4 +1,3 @@
-# --- replacement for parts of your app.py ---
 import streamlit as st
 import joblib
 import numpy as np
@@ -19,7 +18,6 @@ def float_or_nan(s):
     s = s.strip()
     return np.nan if s == "" else float(s)
 
-# Use text_input so user can leave blank for missing -> imputer can fill
 fixed_acidity = st.text_input("Fixed Acidity", "")
 volatile_acidity = st.text_input("Volatile Acidity", "")
 citric_acid = st.text_input("Citric Acid", "")
@@ -44,7 +42,7 @@ if st.button("Predict Quality"):
 
     # Apply preprocessing
     try:
-        features_imputed = imputer.transform(raw)  # ensure imputer was fitted on same shape/order
+        features_imputed = imputer.transform(raw)  
         features_scaled = scaler.transform(features_imputed)
     except Exception as e:
         st.error(f"Preprocessing error: {e}")
@@ -61,8 +59,6 @@ if st.button("Predict Quality"):
     prob_good = None
     try:
         proba = model.predict_proba(features_scaled)[0]
-        # Map probability to class label reliably using model.classes_
-        # find index where class == 1 (assuming 1 is Good), else infer
         classes = list(model.classes_)
         if 1 in classes:
             idx_good = classes.index(1)
@@ -70,15 +66,12 @@ if st.button("Predict Quality"):
             prob_good = proba[idx_good] * 100
             prob_bad = proba[idx_bad] * 100 if idx_bad is not None else None
         else:
-            # If classes are e.g. [False, True] or [not good label, good label], assume 'good' is the label mapped during training
-            # As fallback, show probabilities mapped to classes
             prob_good = None
             prob_bad = None
     except Exception:
         proba = None
 
     st.subheader("Prediction Result:")
-    # Interpret prediction assuming 1==Good
     if prediction[0] == 1:
         if prob_good is not None:
             st.success(f"✅ Good Quality Wine (Confidence: {prob_good:.2f}%)")
@@ -96,7 +89,7 @@ if st.button("Predict Quality"):
             st.error("❌ Not Good Quality Wine")
             st.info("Confidence score not available for this model.")
 
-    # Debug info (optional, hidden behind a checkbox)
+    # Debug info
     if st.checkbox("Show model info"):
         st.write("Model classes:", model.classes_)
         if proba is not None:
