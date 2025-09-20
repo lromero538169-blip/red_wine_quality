@@ -8,7 +8,6 @@ imputer = joblib.load("imputer.pkl")
 scaler = joblib.load("scaler.pkl")
 
 st.title("🍷 Wine Quality Prediction App")
-
 st.markdown("Enter the wine’s chemical properties below to predict its quality:")
 
 # Input fields for wine features
@@ -35,11 +34,12 @@ if st.button("Predict Quality"):
     features_imputed = imputer.transform(features)
     features_scaled = scaler.transform(features_imputed)
 
-    # Predict with model
+    # Predict class and probability
     prediction = model.predict(features_scaled)
+    prob = model.predict_proba(features_scaled)
 
     st.subheader("Prediction Result:")
     if prediction[0] == 1:
-        st.success("✅ Good Quality Wine")
+        st.success(f"✅ Good Quality Wine (Confidence: {prob[0][1]*100:.2f}%)")
     else:
-        st.error("❌ Not Good Quality Wine")
+        st.error(f"❌ Not Good Quality Wine (Confidence: {prob[0][0]*100:.2f}%)")
